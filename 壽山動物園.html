@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>壽山動物園 - 官方8大主題展區智慧導覽網</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0d1a0a 0%, #030803 100%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px rgba(255, 255, 255, 0.08) solid;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px rgba(255, 255, 255, 0.04) solid;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+            border: 1px rgba(255, 255, 255, 0.15) solid;
+        }
+        .zone-entrance-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .scrollbar-hidden::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hidden {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* ------------------ 高級生態背景波浪動畫 (CSS Pulse Fallback) ------------------ */
+        @keyframes junglePulse {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+        .jungle-bg-pulse {
+            background: linear-gradient(270deg, #0d1a0a, #163510, #041203, #0d1a0a);
+            background-size: 800% 800%;
+            animation: junglePulse 15s ease infinite;
+        }
+
+        /* ------------------ 高級漂浮動畫定義 ------------------ */
+        @keyframes gentleFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+        
+        .floating-btn {
+            animation: gentleFloat 4s ease-in-out infinite;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        background-color 0.3s ease, 
+                        border-color 0.3s ease, 
+                        box-shadow 0.3s ease;
+        }
+
+        /* 當鼠標懸停在整個圖釘組上時，暫停上下漂動以便精準點擊，並加入微放大的磁吸效果 */
+        .group-pin:hover .floating-btn {
+            animation-play-state: paused;
+            transform: scale(1.08) translateY(-3px);
+        }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col pb-12">
+
+    <!-- Header Section -->
+    <header id="main-header" class="relative overflow-hidden py-10 text-center z-10">
+        <!-- 動態背景影片區塊 (結合 CSS 動態漸層 + 多重影片直鏈，確保 100% 都有動態畫面) -->
+        <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden jungle-bg-pulse">
+            <!-- 透過 object-cover 高效縮放，徹底避免黑邊，限制在 header 區域內 -->
+            <video autoplay loop muted playsinline class="absolute top-1/2 left-1/2 min-w-full min-h-full object-cover transform -translate-x-1/2 -translate-y-1/2 opacity-35">
+                <!-- 第一順位：嘗試使用 Google Docs API 讀取您的自訂背景影片 -->
+                <source src="https://docs.google.com/uc?export=open&id=1L1qYDpFmlNB48oHOMoU4kQpFxjvi60XJ" type="video/mp4">
+                <source src="https://drive.google.com/uc?export=download&id=1L1qYDpFmlNB48oHOMoU4kQpFxjvi60XJ" type="video/mp4">
+                <!-- 第二順位：萬一 Google 雲端阻擋，即刻自動改用此高速生態叢林瀑布動態影片備用 -->
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4" type="video/mp4">
+            </video>
+            <!-- 漸層暗色遮罩，讓中心較亮，底部自然融入網頁背景 -->
+            <div class="absolute inset-0 bg-gradient-to-b from-[#0d1a0a]/50 via-black/35 to-[#030803]"></div>
+        </div>
+        
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(74,222,128,0.08),transparent_65%)] pointer-events-none z-0"></div>
+        
+        <!-- 加入 relative z-10 確保文字和主影片在背景影片之上 -->
+        <div class="container mx-auto px-4 relative z-10">
+            <span class="inline-block bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full border border-green-500/30 mb-3 tracking-wider uppercase shadow-lg">
+                Kaohsiung Shoushan Zoo Official Categories
+            </span>
+            <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-md">
+                壽山動物園 <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300">智慧互動導覽網</span>
+            </h1>
+            <p class="mt-3 text-gray-400 max-w-2xl mx-auto text-xs md:text-sm leading-relaxed">
+                對齊壽山動物園官方 **8大主題展區**！結合高精度手繪互動地圖、**✨ Gemini AI 智慧對話助理**、實景生態照片與 Web Speech 語音導覽！
+            </p>
+            
+            <!-- 嵌入式介紹影片區塊 -->
+            <div class="max-w-4xl mx-auto mt-8 relative rounded-3xl overflow-hidden glass-card border border-green-500/20 shadow-2xl shadow-green-500/10 aspect-video z-20">
+                <div class="absolute inset-0 bg-black/20 pointer-events-none"></div>
+                <!-- 加入 ?autoplay=1&mute=1 參數以支援自動播放與靜音 -->
+                <iframe src="https://drive.google.com/file/d/1zou_dN7v7O_b8CsztJibGBLcIP84Cf90/preview?autoplay=1&mute=1" 
+                        class="relative w-full h-full border-0 z-10" 
+                        allow="autoplay; encrypted-media" 
+                        allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="container mx-auto px-4 mb-8 sticky top-0 z-50">
+        <div class="glass-panel p-2 rounded-2xl flex gap-2 overflow-x-auto scrollbar-hidden max-w-6xl mx-auto shadow-2xl">
+            <button onclick="switchTab('home')" id="btn-home" class="tab-btn px-4 py-2.5 rounded-xl font-medium text-xs whitespace-nowrap transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-green-400 to-emerald-500 text-black shadow-lg">
+                <i class="fa-solid fa-map"></i> 首頁與地圖
+            </button>
+            <div class="h-6 w-[1px] bg-white/10 self-center"></div>
+            <!-- 官方 8 大展區 -->
+            <button onclick="switchTab('ranch')" id="btn-ranch" class="tab-btn px-3 py-2.5 rounded-xl font-medium text-xs text-pink-300 hover:bg-pink-500/10 whitespace-nowrap transition-all duration-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-pink-500 shadow-sm"></span>兒童牧場
+            </button>
+            <button onclick="switchTab('friendly')" id="btn-friendly" class="tab-btn px-3 py-2.5 rounded-xl font-medium text-xs text-blue-300 hover:bg-blue-500/10 whitespace-nowrap transition-all duration-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-blue-500 shadow-sm"></span>友善動物區
+            </button>
+            <button onclick="switchTab('primates')" id="btn-primates" class="tab-btn px-3 py-2.5 rounded-xl font-medium text-xs text-sky-300 hover:bg-sky-500/10 whitespace-nowrap transition-all duration-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-sky-400 shadow-sm"></span>猿猴家族
+            </button>
+            <button onclick="switchTab('savannah')" id="btn-savannah" class="tab-btn px-3 py-2.5 rounded-xl font-medium text-xs text-yellow-300 hover:bg-yellow-500/10 whitespace-nowrap transition-all duration-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-yellow-400 shadow-sm"></span>草原動物區
+            </button>
+            <button onclick="switchTab('taiwan')" id="btn-taiwan" class="tab-btn px-3 py-2.5 rounded-xl font-medium text-xs text-green-300 hover:bg-green-500/10 whitespace-nowrap transition-all duration-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-green-500 shadow-sm"></span>台灣原生區
+            </button>
+            <button onclick="switchTab('cross')" id="btn-cross" class="tab-btn px-3 py-2.5 rounded-xl font-medium text-xs text-orange-300 hover:bg-orange-500/10 whitespace-nowrap transition-all duration-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-orange-500 shadow-sm"></span>跨域生態區
+            </button>
+            <button onclick="switchTab('path')" id="btn-path" class="tab-btn px-3 py-2.5 rounded-xl font-medium text-xs text-yellow-200 hover:bg-yellow-200/10 whitespace-nowrap transition-all duration-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-yellow-300 shadow-sm"></span>動物小徑
+            </button>
+            <button onclick="switchTab('aquatic')" id="btn-aquatic" class="tab-btn px-3 py-2.5 rounded-xl font-medium text-xs text-cyan-300 hover:bg-cyan-500/10 whitespace-nowrap transition-all duration-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-sm"></span>水棲動物區
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 max-w-6xl flex-grow">
+        <div id="content-grid" class="space-y-12">
+            <!-- Content dynamically generated by JS -->
+        </div>
+    </main>
+
+    <!-- Audio Player Footer Box -->
+    <div id="global-audio-player" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-500 max-w-sm w-full bg-slate-900/95 border border-green-500/30 rounded-2xl p-4 shadow-2xl backdrop-blur-md">
+        <div class="flex items-center gap-4">
+            <div class="relative flex items-center justify-center w-11 h-11 bg-green-500/20 text-green-400 rounded-full animate-pulse" id="player-avatar">
+                <i class="fa-solid fa-volume-high"></i>
+            </div>
+            <div class="flex-grow min-w-0">
+                <p class="text-[10px] text-green-400 font-semibold uppercase tracking-wider">智慧語音正在導覽</p>
+                <h4 class="text-xs font-bold text-white truncate" id="player-title">動物</h4>
+            </div>
+            <button onclick="stopVoice()" class="w-7 h-7 flex items-center justify-center bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-full transition-colors">
+                <i class="fa-solid fa-stop text-xs"></i>
+            </button>
+        </div>
+        <div class="w-full bg-white/10 h-1 rounded-full mt-3 overflow-hidden">
+            <div id="player-progress" class="bg-gradient-to-r from-green-400 to-emerald-500 h-full w-0 transition-all duration-100"></div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; 
+
+        let currentAudio = null;
+        let progressInterval = null;
+        let latestItinerary = "";
+        
+        let customMapUrl = "https://lh3.googleusercontent.com/d/1aMrvH-85oI_IRPGJSRWhbZA67txwPFbU"; 
+        
+        const fallbackMaps = [
+            "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=80", 
+            "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80"
+        ];
+        let mapFallbackChainIndex = 0; 
+
+        // 8 Official Zoo Areas Database - Loaded with high-quality real ecosystem images
+        const zooData = [
+            {
+                id: "ranch",
+                zoneTitle: "兒童牧場",
+                zoneDesc: "多為溫馴的草食性與馴化家畜，是大小朋友親手接觸動物、學習餵食規範與動物福祉的最佳戶外體驗場域。",
+                icon: "fa-cow",
+                type: "theme",
+                color: "pink",
+                colorClass: "bg-pink-500 text-pink-500 shadow-pink-500/50",
+                buttonClass: "border-pink-500/30 text-pink-400 hover:bg-pink-500/10",
+                hoverBorder: "group-hover:border-pink-500/50",
+                mapCoords: { x: "92%", y: "41%" },
+                animals: [
+                    { 
+                        name: "波爾羊 (Boer goat)", 
+                        image: "https://lh3.googleusercontent.com/d/1LZZGdioNF8iPCYVVOlucBXjoR7bLYPcF", 
+                        habitat: "原產於南非，能適應極度乾旱、灌木叢密布的半荒漠氣氣候與惡劣地形。", 
+                        ancestor: "由南非當地的荷蘭裔移民（波爾人）將歐洲、印度與南非本土山羊進行雜交選育而成。", 
+                        history: "「Boer」在荷蘭語中是「農夫」的意思。牠們是世界上唯一經過純化選育的專用肉羊，因抗病力強、生長快速而廣受青睞。園區每天上午10點及下午2點提供免費牧草餵食體驗。", 
+                        emoji: "🐐", 
+                        ttsText: "咩～我是波爾羊！在荷蘭語中，Boer 就是農夫的意思。我們可是世界上唯一經過純化選育的專用肉羊之王，雖然我們很壯碩，但個性非常溫順喔！快來兒童牧場餵我們吃牧草吧！" 
+                    },
+                    { 
+                        name: "侏儒羊 (Dwarf goat)", 
+                        image: "https://lh3.googleusercontent.com/d/1ZY31iexSawnEIwwR8I053ol4eWiTBsV7",
+                        habitat: "西非熱帶雨林與落葉灌木林帶，對當地致命的錐蟲病具有極高的天然免疫力。", 
+                        ancestor: "源自西非古老的矮化山羊品種（如西非侏儒山羊），屬於天然演化與人工選擇的結晶。", 
+                        history: "近年新進駐壽山動物園的超萌生力軍！體型十分嬌小，性情極度溫和、不具備任何攻擊性。在兒童牧場中與波爾羊當好鄰居，深受大小朋友熱烈歡迎。", 
+                        emoji: "🐑", 
+                        ttsText: "大家好！我是精緻嬌小的侏儒羊。我們原產於西非，是近年才來到壽山動物園的新朋友。因為我們特別溫和、小巧黏人，現在是牧場最受歡迎的超級明星！" 
+                    },
+                    { 
+                        name: "兔豚 (Mara)", 
+                        image: "https://lh3.googleusercontent.com/d/1CEOiii_yplYibiSgALHlo9vJusLobOno",
+                        habitat: "南美洲阿根廷巴塔哥尼亞高原的乾燥灌木叢、荒漠與開闊草原。", 
+                        ancestor: "屬於豚鼠科（Caviidae），與天竺鼠、水豚是遠親，但演化出修長如鹿、如兔的跳躍後肢。", 
+                        history: "近年新進駐的明星動物！身形比例奇特，後半身像小兔子，前半身像小鹿。牠們在生物學中最著名的是「嚴格的一夫一妻制」，終生不換伴侶，在南美洲原住民文化中代表著荒原守護者。", 
+                        emoji: "🦘", 
+                        ttsText: "嗨！我是兔豚，來自美麗的巴塔哥尼亞高原。我們雖然長得像兔子又像小鹿，但我們是天竺鼠的親戚喔。我們最引以為傲的是一輩子只愛一個伴侶，是絕對的一夫一妻制！" 
+                    },
+                    { 
+                        name: "長毛昏倒羊 (Myotonic goat)", 
+                        image: "https://lh3.googleusercontent.com/d/1D5IH6RX4l0MKzUj8WruBj-kcYv4yC4la",
+                        habitat: "主要為美國田納西州及南部丘陵、草原帶，適應溫帶半開闊環境。", 
+                        ancestor: "1880年代由美國田納西州的約翰·廷斯利（John Tinsley）意外引入並選育的基因突變品種。", 
+                        history: "因特殊的遺傳性基因突變「先天性肌強直」，當受到驚嚇、緊張 or 過於興奮時，肌肉會瞬間僵硬，導致身體短暫失去平衡而挺直倒下。是近年由壽山引入並成功照護的奇特動物。", 
+                        emoji: "🐐", 
+                        ttsText: "咩～我是大名鼎鼎的昏倒羊！當我受到驚嚇時，肌肉會短暫僵硬而倒在地上。在歷史上我們曾扮演替同伴吸引狼群的英雄，現在在壽山，我們是備受疼愛的觀賞寶貝！" 
+                    },
+                    { 
+                        name: "庫你庫你豬 (Kunekune)", 
+                        image: "https://lh3.googleusercontent.com/d/1ZfYDoA-_mGakJwhy0dRgGeB2Ka6dkmto",
+                        habitat: "紐西蘭平原、草原，現廣泛分布於全球溫帶與亞熱帶的觀光牧場。", 
+                        ancestor: "起源有些神祕，學者認為可能是18世紀末由亞洲船隻帶到紐西蘭，隨後被當地的毛利人（Māori）收養並培育。", 
+                        history: "「Kunekune」在毛利語中就是「肥胖且圓潤」的意思。牠們曾是毛利人部落重要的人情餽贈與食物來源。在野生動物保護人士的努力下成功復育，個性極度親人溫和。", 
+                        emoji: "🐖", 
+                        ttsText: "呼嚕嚕！我是庫你庫你豬！在毛利語中，我的名字就是「圓滾滾肥嘟嘟」的意思。我們以前在紐西蘭差點絕種，多虧了保育人員的努力，現在才能在壽山和大家開心互動！" 
+                    },
+                    { 
+                        name: "雙角犀鳥 (Great Hornbill)", 
+                        image: "https://lh3.googleusercontent.com/d/1YkIxTHeueGjDVfwH0tRsJzub5miEo1q1",
+                        habitat: "分佈於印度、中南半島、蘇門答臘等熱帶雨林，極度依賴參天大樹築巢。", 
+                        ancestor: "屬於犀鳥目犀鳥科。頭部上方長有巨大的盔突，能發出如重金屬撞擊般宏亮的鳴叫聲。", 
+                        history: "壽山動物園特別展示的珍稀大型鳥類，盔突呈鮮豔的黃黑色。犀鳥奉行終生配對的一夫一妻制，繁殖期時雌鳥會在樹洞內用泥土封死洞口產卵，雄鳥負責在洞外遞送食物保護家人，十分忠貞。", 
+                        emoji: "🦜", 
+                        ttsText: "哈囉！我是雙角犀鳥，也是雨林中的忠貞之王。看我頭上黃黑色的巨大盔突，這是我用來吸引伴侶的重要招牌喔！在森林中，我和妻子一生相伴、永不分離！" 
+                    }
+                ]
+            },
+            {
+                id: "friendly",
+                zoneTitle: "友善動物區",
+                zoneDesc: "打破傳統獸舍藩籬，規劃舒適的親水草皮與高空廊道地景。引進高人氣療癒系物種，重塑溫和草食動物與人類的相處視角。",
+                icon: "fa-heart",
+                type: "theme",
+                color: "blue",
+                colorClass: "bg-blue-500 text-blue-500 shadow-blue-500/50",
+                buttonClass: "border-blue-500/30 text-blue-400 hover:bg-blue-500/10",
+                hoverBorder: "group-hover:border-blue-500/50",
+                mapCoords: { x: "37%", y: "60%" },
+                animals: [
+                    { 
+                        name: "水豚 (Capybara)", 
+                        image: "https://lh3.googleusercontent.com/d/1OD7DC0S7TFvb1RhyuBvfZEA_z9wTMFtz",
+                        habitat: "南美洲稀樹草原與熱帶雨林，極其依賴靠近水源的濕地與河床。", 
+                        ancestor: "屬於水豚科，是世界上現存體型最大的囓齒類動物（也就是老鼠的超大遠親！）。", 
+                        history: "新動物園運動中的超級巨星！引進自頑皮世界野生動物園的 5 隻大水豚。園方特別在新建的山形屋及觀察廊旁興建了「水豚山屋」與日式溫泉池，提供水豚泡湯與泥漿浴保溫防蚊。", 
+                        emoji: "🦦", 
+                        ttsText: "你好啊！我是呆萌的水豚，也是現代囓齒動物之王。我最喜歡一整天泡在暖呼呼的水池裡了。因為我很溫和，在動物界中我可是出了名的好人緣社交大師喔！" 
+                    },
+                    { 
+                        name: "羊駝 (Alpaca)", 
+                        image: "https://lh3.googleusercontent.com/d/1yGxNPfqiBdyCOfRu1h6GBYe8MnEXyZyt",
+                        habitat: "南美洲安地斯山脈，屬於高海拔高原山林地帶。", 
+                        ancestor: "劇化歷史超過 6000 年。是由野生的駱馬與小羊駝經人工培育馴化而成。", 
+                        history: "在古印加帝國時期，羊駝被視為極其神聖的動物，其柔軟的毛被稱為「上帝的纖維」，只有皇室貴族才能穿戴。近年在壽山友善動物區混養共生，並多次順利產下健康的羊駝寶寶，是這裡的資深明星。", 
+                        emoji: "𦎬", 
+                        ttsText: "哈囉！我是溫柔的羊駝。在遙遠的印加帝國時代，我們可是非常神聖的動物，我們的毛只有皇室才能穿呢！現在在壽山能直接和大家交朋友，真是太開心了！" 
+                    },
+                    { 
+                        name: "迷你驢 (Miniature Donkey)", 
+                        image: "https://lh3.googleusercontent.com/d/1SB-vjEXdNGKH6KMJ75Dv_PzmYMETBIJu",
+                        habitat: "地中海西西里島與薩丁尼亞島的乾燥山地與丘陵牧場。", 
+                        ancestor: "非洲野驢的基因分支，在古代地中海群島經環境壓迫與人工選育而體型矮小化。", 
+                        history: "具有「驢子界柯基」之稱的矮萌物種！性格極度溫馴，喜好群居。這群可愛新夥伴與迷你馬、台灣黃牛和羊駝在友善區內共生。近期家族還增添了新成員，展現出高度適應力。", 
+                        emoji: "𫘡", 
+                        ttsText: "嗨！我是迷你驢。我們以前在美麗的地中海島嶼上幫忙運送橄欖與木柴，體力非常好！我們天生對人類和其他動物非常有同理心，最適合當貼心的陪伴小夥伴了！" 
+                    },
+                    { 
+                        name: "台灣黃牛 (Formosan Yellow Cattle)", 
+                        image: "https://lh3.googleusercontent.com/d/1UtY682Xg74GCACAgAHb2r0TjyLRTc1", 
+                        habitat: "東亞與東南亞的暖溫帶與亞熱帶農耕平原、丘陵地帶。", 
+                        ancestor: "由東亞原始野牛經數千年的馴化與培育，演化為適合農耕的役用牛種。", 
+                        history: "在台灣傳統農業社會中扮演了極其重要的歷史角色。黃牛是農夫最重要的生產工具與「不說話的家人」，負責犁田、拉車。在友善區內漫步，為現代遊客傳遞溫馨的古老農村記憶。", 
+                        emoji: "🐂", 
+                        ttsText: "哞～我是辛勤耕耘數千年的黃牛。在古早傳統社會，我們是農夫叔叔最忠實的家人。在壽山這裡，我最喜歡優閒地漫步，帶大家重溫最溫暖的古老農村回憶！" 
+                    }
+                ]
+            },
+            {
+                id: "primates",
+                zoneTitle: "猿猴家族",
+                zoneDesc: "展示高智商的靈長類動物。透過樹藤、立體吊掛廊道與樹屋建築，還原森林樹梢自然攀爬本能與社群結構。",
+                icon: "fa-face-laugh-wink",
+                type: "theme",
+                color: "sky",
+                colorClass: "bg-sky-400 text-sky-400 shadow-sky-400/50",
+                buttonClass: "border-sky-400/30 text-sky-300 hover:bg-sky-400/10",
+                hoverBorder: "group-hover:border-sky-400/50",
+                mapCoords: { x: "44%", y: "30%" },
+                animals: [
+                    { 
+                        name: "黑猩猩 (Chimpanzee)", 
+                        image: "https://lh3.googleusercontent.com/d/1XrPRwgfLOug8OQgdLyiEjnaIPl7HQiMN",
+                        habitat: "中非與西非的熱帶雨林、熱帶林地及薩瓦納稀樹草原邊緣。", 
+                        ancestor: "與人類基因最接近的現存動物。在約500萬至700萬年前，與人類擁有共同祖先並正式分道鑣。", 
+                        history: "原本住在傳統大鐵籠中，配合新動物園運動，黑猩猩搬入了寬敞、擁有綠樹、岩山、瀑布與小溪的新家。原本的巨大鋼鐵籠舍被改建為「光室咖啡廳」，讓人與動物的觀看權利實施歷史性的翻轉與省思。", 
+                        emoji: "🦍", 
+                        ttsText: "嗨！我是黑猩猩！我們與人類的基因高達 98.8% 相似。現在我們在新搬進的水與森林之家過得非常自在！原本的老鐵籠已經改建為光室咖啡，這非常具有生命教育意義！" 
+                    },
+                    { 
+                        name: "婆羅洲紅毛猩猩 (Bornean Orangutan)", 
+                        image: "https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?auto=format&fit=crop&w=600&q=80",
+                        habitat: "東南亞婆羅洲的熱帶雨林樹冠層，一生幾乎都在樹上生活。", 
+                        ancestor: "亞洲唯一的現存大型類人猿，是森林高空的築巢大師，智商極高。", 
+                        history: "壽山的指標猩猩（如著名明星阿宏和已故的咪咪）深受遊客喜愛。由於印尼熱帶雨林大量開墾與非法捕捉，目前在野外處於極度瀕危狀態。園區努力豐富化設施，重現其攀爬攀越技能。", 
+                        emoji: "🦧", 
+                        ttsText: "你好呀！我是婆羅洲紅毛猩猩。我們一輩子幾乎都生活在熱帶雨林高高的樹梢上，每天都會編織一個溫馨的葉床睡覺。請大家要一起多支持森林保育、珍惜資源喔！" 
+                    },
+                    { 
+                        name: "白手長臂猿 (White-handed Gibbon)", 
+                        image: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=600&q=80",
+                        habitat: "中南半島至蘇門答臘的熱帶雨林，廣泛分布於泰國、馬來西亞及印尼。", 
+                        ancestor: "屬於長臂猿科。手腳皆為白色，歷史上廣泛適應高密度原始森林，藉由手臂擺盪飛躍前進。", 
+                        history: "古代文獻中著名的「猿啼聲」就是指牠們。其啼鳴聲嘹亮無比、有著複雜的音階與雙重唱結構，用於宣告領域及與伴侶互動。牠們的攀躍本領傲視全園，像是在林間跳懷爾滋。", 
+                        emoji: "🐵", 
+                        ttsText: "「兩岸猿聲啼不住」詩中唱的猿就是我們白手長臂猿喔！我們擁有比身體還長的大手臂，在樹林間擺盪時速能高達 50 公里！請來聽聽我們高亢清脆的二重唱吧！" 
+                    },
+                    { 
+                        name: "臺灣獼猴 (Formosan Rock Macaque)", 
+                        image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&w=600&q=80",
+                        habitat: "臺灣本島特有種。從海平面一直到海拔3000公尺以上的森林皆有其足跡。", 
+                        ancestor: "臺灣唯一的原生獼猴類，由更新世冰河時期跨越陸橋來到台灣後獨立隔離演化而成。", 
+                        history: "壽山動物園緊鄰柴山（壽山），園區周邊有著極為龐大的野外獼猴族群。獼猴與遊客的和平共存是壽山最重要的生態課。園方積極倡導「食物不露白、不挑釁、不接觸、不餵食」的友善獼猴準則。", 
+                        emoji: "🐒", 
+                        ttsText: "哈囉！我是台灣獼猴，也是台灣唯一的原生野生猴類！我們這裡緊鄰柴山，有很多我的野生同伴會下山拜訪。請大家要記住「食物不露白」的友善共存原則喔！" 
+                    }
+                ]
+            },
+            {
+                id: "savannah",
+                zoneTitle: "草原動物區",
+                zoneDesc: "模擬非洲熱帶稀樹草原地景。展示陸地最具視覺震撼性的巨型野生獸群，展現生命的宏偉與野性呼喚。",
+                icon: "fa-sun-plant-wilt",
+                type: "theme",
+                color: "yellow",
+                colorClass: "bg-yellow-400 text-yellow-400 shadow-yellow-400/50",
+                buttonClass: "border-yellow-400/30 text-yellow-300 hover:bg-yellow-400/10",
+                hoverBorder: "group-hover:border-yellow-400/50",
+                mapCoords: { x: "81%", y: "28%" },
+                animals: [
+                    { 
+                        name: "非洲獅 (African Lion)", 
+                        image: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=600&q=80",
+                        habitat: "非洲撒哈拉以南的寬廣草原與半荒漠地帶，為唯一的群居性貓科動物。", 
+                        ancestor: "起源於更新世的貓科豹屬，古代近親為體型更為壯碩的歐洲洞獅、野性極強。", 
+                        history: "草原區的「萬獸之王」（如明星獅小辛、小巴），通常在午後悠閒地躺在岩石上曬日光浴。園區內的獅群多為台灣本土動物園繁衍的後代，見證了國內野生動物保育與血緣調度的歷史。", 
+                        emoji: "🦁", 
+                        ttsText: "吼～我是草原上的萬獸之王非洲獅！別看我午後懶洋洋地躺在岩石上曬太陽，我威嚴的吼聲可是能傳播數公里喔！我們獅群在這裡代表著台灣多年來物種保育血緣傳承的成果。" 
+                    },
+                    { 
+                        name: "南方白犀牛 (Southern White Rhinoceros)", 
+                        image: "https://images.unsplash.com/photo-1504470695779-75300268aa0e?auto=format&fit=crop&w=600&q=80",
+                        habitat: "非洲南部草原，極依賴泥坑進行防曬、防寄生蟲叮咬。", 
+                        ancestor: "奇蹄目的代表性巨獸，名字源自荷蘭語「Weid（寬）」，形容其進食草類的寬唇，卻被誤譯為「White（白））。", 
+                        history: "體型僅次於大象的陸地第二大巨獸。雖然外表披著厚重如裝甲的堅硬皮革，但個性其實相當溫和、害羞且內向。由於野外犀牛角面臨極其嚴重的非法盜獵危機，因此牠是國際一級瀕危保育類，也是壽山保種重臣。", 
+                        emoji: "🦏", 
+                        ttsText: "我是白犀牛。別看我披著厚重堅硬的裝甲，我的個性其實非常溫和害羞。我的名字其實是因為嘴唇很寬被誤翻譯成白色的.我們在野外正面臨嚴重的犀牛角盜獵，希望大家能一起保護我們！" 
+                    },
+                    { 
+                        name: "查普曼斑馬 (Chapman's Zebra)", 
+                        image: "https://images.unsplash.com/photo-1501705388883-4ed8a543392c?auto=format&fit=crop&w=600&q=80",
+                        habitat: "南非與東非的熱帶季風草原，條紋間夾雜獨特的灰色陰影暗條紋。", 
+                        ancestor: "奇蹄目馬科，為平原斑馬（Equus quagga）的特色亞種。", 
+                        history: "身上擁有獨一無二、彷彿指紋般的黑白相間條紋，成群在開闊地活動時極具視覺震撼力。在演化歷史中，斑馬的條紋被證實具有攻擊者視覺模糊、防蚊蠅叮咬以及高溫防曬散熱等多重神奇功能，是適應大草原的演化奇蹟。", 
+                        emoji: "🦓", 
+                        ttsText: "嗨！我是查普曼斑馬！我們身上黑白條紋就像人類的指紋一樣，每隻斑馬都是獨一無一的喔！這身斑紋不僅能防叮咬，還能調節體溫，是我們適應大草原的祖傳秘訣！" 
+                    },
+                    { 
+                        name: "河馬 (Hippopotamus)", 
+                        image: "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=600&q=80",
+                        habitat: "非洲撒哈拉以南的河流與濕地，大半時間都浸泡在水中避暑。", 
+                        ancestor: "分子生物學顯示，河馬並非豬的近親，其親緣關係最接近的是鯨豚類動物。", 
+                        history: "古希臘語意為「河中的馬」。看似呆萌，實則是領域性極強、爆發力驚人的巨獸，白天必須依賴水域 or 泥漿來防止皮膚曬傷與脫水，夜晚則上岸連續啃食數十公斤牧草，在非洲生態系中扮演翻動河道底層養分的重要角色。", 
+                        emoji: "🦛", 
+                        ttsText: "呼嚕！我是河馬！在古希臘語中，我的名字代表河中的馬.我們在水裡可靈活了！雖然我們長得呆萌，但在野外，我們可是非常有領域性、爆發力十足的巨大猛獸，別小看我喔！" 
+                    }
+                ]
+            },
+            {
+                id: "taiwan",
+                zoneTitle: "台灣原生區",
+                zoneDesc: "展示福爾摩沙寶島特有亞種與一級保育類動物。透過地勢起伏、茂密灌木林地，重塑台灣山林生態教育與物種復育核心基地。",
+                icon: "fa-tree",
+                type: "theme",
+                color: "green",
+                colorClass: "bg-green-500 text-green-500 shadow-green-500/50",
+                buttonClass: "border-green-500/30 text-green-400 hover:bg-green-500/10",
+                hoverBorder: "group-hover:border-green-500/50",
+                mapCoords: { x: "64%", y: "35%" },
+                animals: [
+                    { 
+                        name: "台灣黑熊 (Formosan Black Bear)", 
+                        image: "https://lh3.googleusercontent.com/d/1GCZjBbcOcoNNfWGzu3Ab3UFLaRjcABsS",
+                        habitat: "台灣中央山脈針葉林與闊葉混生林，是中高海拔森林的主人。", 
+                        ancestor: "亞洲黑熊（Ursus thibetanus）的特有亞種，因冰河期結束被島嶼隔離演化至今。", 
+                        history: "台灣唯一的原生熊類，胸前有標誌性的白色「V」字斑紋，屬於瀕危的一級保育類動物。壽山的台灣黑熊（如名氣響亮的波比，曾因像人類般直立站立爆紅）是本園區的核心保育招牌，見證了本土野生動物保育與保種歷史。", 
+                        emoji: "🐻", 
+                        ttsText: "哩賀！我是胸前有白色V字領的台灣黑熊波比。別看我們胖嘟嘟的，我們爬樹、游泳樣樣精通喔！在台灣山林裡，我們是神聖的守護者。請和我們一起支持高山森林保育！" 
+                    },
+                    { 
+                        name: "石虎 (Leopard Cat)", 
+                        image: "https://lh3.googleusercontent.com/d/1j6vb4PFljLXACuM3LQAs4vgJWNS2UVxj", 
+                        habitat: "台灣低海拔丘陵至淺山生活圈，生性機警敏捷、夜行性。", 
+                        ancestor: "貓科 Leopardus 屬，身上具有如豹一般的斑點，兩眼內側有白色條紋。", 
+                        history: "台灣原生唯一的貓科野生動物，屬於瀕臨絕種的一級保育類！主要生活在淺山、農田邊緣，因路殺、棲地破碎與農藥等威脅面臨存亡危機。壽山動物園與特有生物研究保育中心攜手推動跨院認養保育。", 
+                        emoji: "🐱", 
+                        ttsText: "哈囉！我是極為珍貴的台灣原生石虎。我耳後有明顯的白斑、身上有漂亮的豹紋。在淺山地區，我們需要更多的安全廊道和無毒農作環境，謝謝大家守護我們！" 
+                    },
+                    { 
+                        name: "台灣梅花鹿 (Formosan Sika Deer)", 
+                        image: "https://lh3.googleusercontent.com/d/1H4SscHTVlYhU8UhdFhrhmx3sL2FoBk-H", 
+                        habitat: "臺灣海拔300公尺以下的低海拔平原、丘陵地及草生地。", 
+                        ancestor: "梅花鹿在台灣地理隔離後的特有亞種，夏天身上會布滿如梅花般盛開的美麗白斑。", 
+                        history: "17世紀大航海時代，臺灣梅花鹿皮是極具價值的國際貿易商品，每年有數十萬張鹿皮出口，導致野外族群遭遇毀滅性捕獵並在1969年宣告野外絕滅。幸得動物園與民間保留純種，1980年代於墾丁成功復育野化。", 
+                        emoji: "🦌", 
+                        ttsText: "我是台灣梅花鹿.在17世紀大航海時代，我們的鹿皮被大量出口，導致我們在1969年野外絕跡。幸好透過動物園與墾丁的努力復育，現在我們在台灣又重現繁育之光了！" 
+                    },
+                    { 
+                        name: "台灣山羌 (Formosan Reeves's Muntjac)", 
+                        image: "https://lh3.googleusercontent.com/d/1FZEaPMOIpLhsnjABH2QFJM6mCPqQYEEI", 
+                        habitat: "台灣低海拔丘陵至中海拔森林的茂密草叢邊緣，生性極為膽小害羞。", 
+                        ancestor: "現存最古老、最原始的鹿科動物之一。雄性山羌除了有短角，還擁有發達防衛用的上犬齒（獠牙）。", 
+                        history: "台灣原生鹿科中體型最小的一種，草食性。叫聲非常短促、響亮且類似犬吠，因此又名為「吠鹿」。山羌保留了早期鹿科演化階段的特殊上犬齒，是生物演化史上具有極高研究價值的「活化石」。", 
+                        emoji: "🦌", 
+                        ttsText: "（吠叫聲！）我是台灣最小的鹿科動物台灣山羌。因為我的叫聲很像小狗，所以也被叫做吠鹿。別看我小小的，我頭上保留了古老鹿科才有的獠牙，是活化石喔！" 
+                    }
+                ]
+            },
+            {
+                id: "cross",
+                zoneTitle: "跨域生態區",
+                zoneDesc: "規劃亞洲及全球各大洲的代表性猛獸與特殊適應行為哺乳類。透過擬真棲地展示世界多維生態與地理適應的神奇魅力。",
+                icon: "fa-fire",
+                type: "theme",
+                color: "orange",
+                colorClass: "bg-orange-500 text-orange-500 shadow-orange-500/50",
+                buttonClass: "border-orange-500/30 text-orange-400 hover:bg-orange-500/10",
+                hoverBorder: "group-hover:border-orange-500/50",
+                mapCoords: { x: "16%", y: "65%" },
+                animals: [
+                    { 
+                        name: "孟加拉虎 (Bengal Tiger)", 
+                        image: "https://lh3.googleusercontent.com/d/1MmYuIYgoCsfqddwp0MDlNHugz2sK9xeJ", 
+                        habitat: "印度次大陸，包括印度、孟加拉巽他班紅樹林沼澤、熱帶雨林及山麓森林。", 
+                        ancestor: "貓科豹屬，現存數量最多、分布最廣的老虎亞種，是荒野的霸主與神聖精神代表。", 
+                        history: "牠們是印度與孟加拉的國獸，在歷史上與亞洲獅共同統治印度。因其無可匹敵的野性與優雅，在亞洲文化中是極其重要的圖騰。園區透過模擬山石、瀑布，重現其喜愛游水與伏擊的王者習性。", 
+                        emoji: "🐯", 
+                        ttsText: "吼！我是孟加拉虎。我是印度次大陸熱帶雨林與紅樹林的主記，也是印度和孟加拉 of 國獸。我非常喜歡游泳 and 伏擊，快來感受我的猛獸威力吧！" 
+                    },
+                    { 
+                        name: "白老虎 (White Tiger)", 
+                        image: "https://lh3.googleusercontent.com/d/1ISYpHAaSvChQOaC0g4hAXNtZzlbUUVdZ",
+                        habitat: "與孟加拉虎相同（主要起源於印度中部森林地帶）。", 
+                        ancestor: "並非獨立亞種，也不是白化症，而是孟加拉虎極其罕見的隱性基因突變（雙親皆帶白化基因）。", 
+                        history: "在歷史紀錄中，野外確實曾發現過野生白虎，其中最著名的是1951年在印度雷瓦（Rewa）地區被捕獲的野生雄性白虎「莫罕」，現今全球圈養環境中的絕大數白老虎，幾乎都是這隻傳奇白虎的後代，極具歷史傳奇色彩。", 
+                        emoji: "🐅", 
+                        ttsText: "你好！我是白老虎，我雙眼呈湛藍色、白色皮毛是孟加拉虎的隱性突變，絕非生病喔！我們現存的白虎同伴幾乎都是 1951 年印度雷瓦捕獲的傳奇雄虎「莫罕」的子孫呢！" 
+                    },
+                    { 
+                        name: "單峰駱駝 (Dromedary / Arabian Camel)", 
+                        image: "https://lh3.googleusercontent.com/d/1uuPKZDrL3ECX1stG-Vq8p2JvUYijnZgu",
+                        habitat: "阿拉伯半島及北非的極度乾旱沙漠地區（已無真正野生種，僅剩澳洲野化群體）。", 
+                        ancestor: "駱駝科。其野生祖先在歷史上非常早就滅絕了（大約在 3000 到 6000 年前）。", 
+                        history: "牠們在約3000年前於阿拉伯半島被人類馴化，隨後跟隨人類的商隊與軍隊，廣泛分布至中東、北非及印度，是橫跨撒哈拉沙漠「沙海」最重要的交通工具。19世紀被歐洲人引入澳洲，後在內陸野化。", 
+                        emoji: "🐫", 
+                        ttsText: "我是單峰駱駝！我們是人類歷史上最重要的「沙漠之舟」，也是貿易商隊橫跨沙海的依靠。雖然我們的野外始祖早就滅絕了，但我們非常能適應極度乾旱的氣候！" 
+                    },
+                    { 
+                        name: "沼林袋鼠 (Dusky Pademelon)", 
+                        image: "https://lh3.googleusercontent.com/d/1oec3iIGvfyVf99AUih0UePYUVnhYwFej",
+                        habitat: "新幾內意及其周邊群島的亞熱帶與熱帶潮濕林、草原灌木叢。", 
+                        ancestor: "屬於袋鼠科小林袋鼠屬，體型非常嬌小，前半身十分短巧，擅長在茂密叢林底層穿梭。", 
+                        history: "壽山動物園自新加坡動物園跨國引進的珍貴保育夥伴！牠們是世界上體型最小的袋鼠之一。與澳洲大紅袋鼠相比，牠們更習慣在樹林茂密的底層覓食、躲藏。壽山特別為其打造了模擬海島底層的濕潤灌木區。", 
+                        emoji: "🦘", 
+                        ttsText: "嗨！我是沼林袋鼠。別看我這麼小一隻，我可是正統的袋鼠家族成員喔！我們口袋裡也能裝小寶寶，我們非常適應新幾內亞茂密的叢林，是跳躍穿梭的高手！" 
+                    }
+                ]
+            },
+            {
+                id: "path",
+                zoneTitle: "動物小徑",
+                zoneDesc: "特色半水生、高寒 or 荒漠地區的高智商適應性哺乳類。規劃起伏土丘、地道迷宮與枯木，展示微型生命的頑強生存之道。",
+                icon: "fa-paw",
+                type: "theme",
+                color: "yellow-bright",
+                colorClass: "bg-yellow-300 text-yellow-300 shadow-yellow-300/50",
+                buttonClass: "border-yellow-300/30 text-yellow-200 hover:bg-yellow-300/10",
+                hoverBorder: "group-hover:border-yellow-300/50",
+                mapCoords: { x: "84%", y: "67%" },
+                animals: [
+                    { 
+                        name: "狐獴 (Meerkat)", 
+                        image: "https://lh3.googleusercontent.com/d/1Ft0MEGk_k1PX4xMwj6dtRis8KsLPY0R3", 
+                        habitat: "非洲南部的乾燥地區，主要分布於南非的喀拉哈里沙漠與納米比沙漠。", 
+                        ancestor: "獴科。演化出極度適應灌木叢、熱帶草原與開闊荒漠的特殊生存機制。", 
+                        history: "牠們是高度社會化的群體動物。歷史上為了在缺乏遮蔽物的荒漠中防範猛禽與毒蛇等強大天敵，演化出了直立站崗擔任哨兵、集體挖掘複雜地下迷宮洞穴系統的獨特集體防禦行為，在現代是高智慧社群的象徵。", 
+                        emoji: "🦦", 
+                        ttsText: "嗨！我是狐獴！我們家族在喀拉哈里沙漠過著高度團結的群居生活。為了提防天空的老鷹和地上的毒蛇，我們演化出了站立放哨的「萌樣」哨兵機制喔！" 
+                    },
+                    { 
+                        name: "二趾樹懶 (Two-toed Sloth)", 
+                        image: "https://lh3.googleusercontent.com/d/1R66w2SpXt0RTXzNUwxZX8bYKkOKokrak",
+                        habitat: "中美洲與南美洲的茂密熱帶雨林，如亞馬遜盆地高空樹冠層。", 
+                        ancestor: "在遠古歷史中（更新世），樹懶的祖先是生活在地面上、體型堪比大象的巨型地懶（已滅絕）。", 
+                        history: "現存的二趾樹懶是完全適應樹棲生活的「樹冠隱士」。為了在雨林樹冠層適應低營養的樹葉飲食，牠們歷史上演化出哺乳動物中極低的代謝率，其毛髮結構甚至能與綠藻共生，提供完美的保護色與節能演化機制。", 
+                        emoji: "🦥", 
+                        ttsText: "你好……我是……樹懶.我的遠古祖先可是像大象一樣龐大的陸地「地懶」喔。為了在雨林樹梢上生存，我們演化出了哺乳動物中最低的代謝率，超級節能！" 
+                    },
+                    { 
+                        name: "冠豪豬 (Crested Porcupine)", 
+                        image: "https://lh3.googleusercontent.com/d/130Lty_Vm9fJt17rDf6OYHVfLlDjAA6hM",
+                        habitat: "地中海地區、北非及亞熱帶灌木叢與岩石山坡。", 
+                        ancestor: "屬於豪豬科。身體背部覆蓋著極長、堅硬且中空的黑白相間防禦性棘刺。", 
+                        history: "常被誤認為刺蝟，但體型要龐大得多。牠們在受到天敵威脅時，會用力跺腳、豎起全身棘刺，甚至倒退撞擊敵人，將倒刺刺入掠食者體內，是非常強悍的防衛型嚙齒動物。", 
+                        emoji: "𦔯", 
+                        ttsText: "沙沙！我是冠豪豬.別小看我身上的黑白刺，當我生氣或遇到危險時，我會倒退向敵人衝撞！這是一套非常強悍的防禦防線。在動物小徑中，我很喜歡挖洞喔！" 
+                    }
+                ]
+            },
+            {
+                id: "aquatic",
+                zoneTitle: "水棲動物區",
+                zoneDesc: "西非雨林沼澤、新熱帶界河流等水陸交界生態。展示具有極致生存與隱蔽演化的半水生與伏擊型物種。",
+                icon: "fa-water",
+                type: "special",
+                color: "cyan",
+                colorClass: "bg-cyan-400 text-cyan-400 shadow-cyan-400/30",
+                buttonClass: "border-cyan-400/20 text-cyan-300 hover:bg-cyan-400/10",
+                hoverBorder: "group-hover:border-cyan-400/50",
+                mapCoords: { x: "7%", y: "40%" },
+                animals: [
+                    { 
+                        name: "侏儒河馬 (Pygmy Hippopotamus)", 
+                        image: "https://lh3.googleusercontent.com/d/1afXWXgv5AErcgGbfjpdvPZYsMD4kYx-Z", 
+                        habitat: "西非的熱帶雨林與沼澤流域，主要集中在賴比瑞亞，少數分布於幾內意和象牙海岸。", 
+                        ancestor: "河馬科現存唯二的物種之一，與普通河馬在幾千萬年前由共同祖先分化而成。", 
+                        history: "與成群生活在開闊河流的普通河馬不同，侏儒河馬在歷史演化中選擇了隱密、潮濕的森林深處。牠們生性孤僻且多在夜間單獨活動。由於棲息地極度受限於西非雨林，歷史上一直到 19 世紀中後期才被西方科學界正式確認存在。", 
+                        emoji: "𦝼", 
+                        ttsText: "嗨！我是稀有的侏儒河馬。我不像大河馬那樣成群結隊，我們在西非潮濕的熱帶雨林深處獨自生活，個性非常害羞隱密，直到19世紀才被科學界發現呢！" 
+                    },
+                    { 
+                        name: "眼鏡凱門鱷 (Spectacled Caiman)", 
+                        image: "https://lh3.googleusercontent.com/d/1kv5fh49TkeyLY87Ddx70-mb2hYpx_zIw",
+                        habitat: "中美洲與南美洲的廣大淡水水域，範圍橫跨墨西哥、亞馬遜河流域與奧利諾科河等濕地環境。", 
+                        ancestor: "短吻鱷科（Alligatoridae），因兩眼之間有條骨質橫脊像眼鏡框而得名。", 
+                        history: "牠們是新熱帶界歷史上適應力最強、最耐受寒冷的鱷魚之一，能融入濕地、河流、湖泊甚至人工運河。因為對環境適應力極強且繁殖力高，歷史上牠們曾被引入到美國佛羅里達州、古巴等地，並在當地建立了強勢的外來野化族群。", 
+                        emoji: "🐊", 
+                        ttsText: "我是眼鏡凱門鱷！我眼睛前面的骨質橫脊就像戴了一副帥氣的眼鏡。我們是新熱帶界適應力最強的鱷魚，繁殖力強，連美國佛羅里達都有我們野化繁衍的同伴喔！" 
+                    },
+                    { 
+                        name: "真鱷龜 (Alligator Snapping Turtle)", 
+                        image: "https://lh3.googleusercontent.com/d/1CXIGWXF6gC7rKLzcTtDwTi03awRSdfsF",
+                        habitat: "北美洲東部與東南部（主要是密西西比河流域），如淤泥與枯木堆積、水流緩慢的深河、湖泊。", 
+                        ancestor: "世界體型最大的淡水龜之一，是北美洲水生生態系中的古老頂級伏擊掠食者。", 
+                        history: "為了適應混濁的深水環境，牠們在歷史上演化出極具特色的「擬餌舌頭」——舌頭上有個像紅色蠕蟲的肉突，能一整天靜止在水底並張大嘴巴，擺動舌頭誘騙魚類游入口中，是演化史上堪稱一絕的完美伏擊獵手。", 
+                        emoji: "🐢", 
+                        ttsText: "我是大鱷龜，北美最古老的水中伏擊大師！我的舌頭演化出像紅色小蟲一般的擬餌肉突，只要張大嘴在水底一動不動地搖擺，魚兒就會自己游進來，是完美捕魚手！" 
+                    }
+                ]
+            }
+        ];
+
+        // ------------------ ✨ GEMINI API UTILITIES & RETRY ------------------
+        async function callGeminiAPI(userPrompt, systemInstructionText) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemInstructionText }] }
+            };
+
+            const fetchOptions = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            };
+
+            const maxRetries = 5;
+            let currentDelay = 1000;
+
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, fetchOptions);
+                    if (!response.ok) {
+                        throw new Error(`HTTP status ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (textResult) {
+                        return textResult;
+                    }
+                    throw new Error("Empty response parts");
+                } catch (err) {
+                    if (attempt === maxRetries) {
+                        throw new Error("無法連線至智慧助理。請檢查網路狀態或 API 金鑰配置。");
+                    }
+                    await new Promise(resolve => setTimeout(resolve, currentDelay));
+                    currentDelay *= 2; 
+                }
+            }
+        }
+
+        // ------------------ ✨ ITINERARY PLANNER ------------------
+        async function generateItinerary(itineraryType) {
+            const outputBox = document.getElementById('ai-itinerary-output');
+            if (!outputBox) return;
+
+            outputBox.classList.remove('hidden');
+            outputBox.innerHTML = `
+                <div class="glass-card p-6 rounded-2xl border border-emerald-500/20 flex flex-col items-center justify-center gap-3">
+                    <div class="flex items-center gap-2 text-emerald-400">
+                        <i class="fa-solid fa-spinner animate-spin text-xl"></i>
+                        <span class="text-sm font-bold">Gemini AI 正在為您量身打造「${itineraryType}」...</span>
+                    </div>
+                </div>
+            `;
+            outputBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            const sysPrompt = `你是高雄壽山動物園的智慧導覽專家。
+請利用壽山動物園官方的8大主題與特色展區（兒童牧場、友善動物區、猿猴家族、草原動物區、台灣原生區、跨域生態區、動物小徑、水棲動物區），針對遊客的需求規劃一條專屬一日/半日參觀路線。
+回覆要求：
+1. 繁體中文，語氣親切有活力、富含生態教育意義。
+2. 提出具體推薦參觀展區順序（如 兒童牧場 -> 友善動物區），並寫明各區特色與推薦理由。
+3. 增加1~2個貼心小建議（如：防蚊、柴山獼猴友善防範政策「不露白」等）。
+4. 排版精緻（使用 markdown 列點或粗體標題），字數約在200-300字。`;
+
+            try {
+                const resultText = await callGeminiAPI(`我想要一份針對「${itineraryType}」設計的官方推薦參觀路線。`, sysPrompt);
+                
+                let formattedHtml = resultText
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/-\s(.*?)<br>/g, '<div class="flex items-start gap-2 mb-1"><span class="text-emerald-400">•</span><span>$1</span></div>');
+
+                outputBox.innerHTML = `
+                    <div class="glass-card p-6 rounded-3xl border border-emerald-500/30 shadow-2xl relative overflow-hidden animate-fade-in">
+                        <div class="absolute -right-16 -bottom-16 w-32 h-32 rounded-full bg-emerald-500/5 blur-2xl pointer-events-none"></div>
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                            <h4 class="text-md font-bold text-emerald-300 flex items-center gap-2">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> 官方專屬路線：${itineraryType}
+                            </h4>
+                            <button onclick="document.getElementById('ai-itinerary-output').classList.add('hidden')" class="text-gray-400 hover:text-white">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <div class="text-xs md:text-sm text-gray-300 leading-relaxed space-y-2">
+                            ${formattedHtml}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                outputBox.innerHTML = `
+                    <div class="glass-card p-6 rounded-3xl border border-red-500/30 text-center animate-fade-in">
+                        <p class="text-xs text-red-400 font-semibold mb-2">😭 ${error.message}</p>
+                        <p class="text-[10px] text-gray-500">提示：系統目前在無金鑰沙盒環境，我們已採用智慧行程預選機制載入。</p>
+                        <button onclick="usePredefinedItinerary('${itineraryType}')" class="mt-3 bg-red-500/10 text-red-300 border border-red-500/20 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-red-500/20">
+                            啟用本機官方經典路線
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function usePredefinedItinerary(type) {
+            const outputBox = document.getElementById('ai-itinerary-output');
+            if (!outputBox) return;
+
+            let plan = "";
+            if (type.includes("親子")) {
+                plan = "<strong>👶 官方經典親子放電行程推薦：</strong><br><br>1. <strong>首站：兒童牧場 (92%, 41%)</strong> - 早上動物活力滿滿，最適合近距離欣賞侏儒羊、波爾羊與雙角犀鳥！還可以進行發放牧草餵食體驗。<br>2. <strong>第二站：友善動物區 (37%, 60%)</strong> - 散步尋找全新高人氣水豚君與可愛羊駝、迷你驢家族。<br>3. <strong>第三站：猿猴家族 (44%, 30%)</strong> - 看黑猩猩與紅毛猩猩攀吊本領，並前往光室咖啡廳休息。<br><br>💡 <strong>官方貼心建議：</strong>園區周邊有野生柴山獼猴，請務必做到「食物不露白、不手提塑膠袋」共同維護友善共存環境。";
+            } else if (type.includes("網美")) {
+                plan = "<strong>📷 網美攝影與地標建築探索行程推薦：</strong><br><br>1. <strong>第一站：天空高空步道廊道</strong> - 俯瞰整個園區與穿梭在樹冠間的獼猴野生環境。<br>2. <strong>第二站：水豚山屋 (37%, 60%)</strong> - 獨家全新山形屋建築，觀賞水豚在日式溫泉內泡湯，是最佳攝影地標。<br>3. <strong>第三站：跨域生態區 (16%, 65%)</strong> - 尋找超可愛的沼林袋鼠與孟加拉虎，享受高對比的視覺對沖！<br><br>💡 <strong>官方貼心建議：</strong>午後 2 點至 4 點斜射光穿透鋼構空橋最迷人，斑馬和白犀牛此時在落日餘暉下顯得特別宏偉！";
+            } else if (type.includes("約會")) {
+                plan = "<strong>💖 浪漫情侶生態漫遊行程推薦：</strong><br><br>1. <strong>第一站：台灣原生區 (64%, 35%)</strong> - 一起漫步漫遊，看台灣梅花鹿與山羌如童話般的優雅身影。<br>2. <strong>第二站：動物小徑 (84%, 67%)</strong> - 與呆萌無比的狐獴直立站崗姿勢進行合照互動。<br>3. <strong>第三站：水棲動物區 (7%, 40%)</strong> - 探訪神祕的侏儒河馬與眼鏡凱門鱷。<br><br>💡 <strong>官方貼心建議：</strong>推薦租用電子語音導覽，一邊漫步一邊聆聽動物小故事。";
+            } else {
+                plan = "<strong>⚡ 一小時精華快速閃遊推薦：</strong><br><br>1. <strong>起點：友善動物區 (37%, 60%)</strong> - 快速捕捉水豚、羊駝這對官方超人氣療癒拍檔。<br>2. <strong>中點：草原動物區 (81%, 28%)</strong> - 一次打包白犀牛、大河馬、非洲獅三大非洲巨獸。<br>3. <strong>終點：台灣原生區 (64%, 35%)</strong> - 朝盛超高人氣台灣黑熊，在山形屋外拍照留下難忘紀念！<br><br>💡 <strong>官方貼心建議：</strong>快速穿梭請務必沿著主幹道「天空步道」前進，視野開闊、效率最高！";
+            }
+
+            outputBox.innerHTML = `
+                <div class="glass-card p-6 rounded-3xl border border-emerald-500/30 shadow-2xl relative overflow-hidden animate-fade-in">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                        <h4 class="text-md font-bold text-emerald-300 flex items-center gap-2">
+                            <i class="fa-solid fa-map"></i> 推薦官方經典路線：${type} (本機備用機制)
+                        </h4>
+                        <button onclick="document.getElementById('ai-itinerary-output').classList.add('hidden')" class="text-gray-400 hover:text-white">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="text-xs md:text-sm text-gray-300 leading-relaxed space-y-2">
+                        ${plan}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ------------------ ✨ ANIMAL INTERACTIVE CHAT MODAL ------------------
+        function openAnimalChat(zoneId, animalIndex) {
+            const zone = zooData.find(z => z.id === zoneId);
+            if (!zone) return;
+            const animal = zone.animals[animalIndex];
+            if (!animal) return;
+
+            const existing = document.getElementById('animal-chat-modal');
+            if (existing) existing.remove();
+
+            const chatModal = document.createElement('div');
+            chatModal.id = "animal-chat-modal";
+            chatModal.className = "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in";
+            
+            chatModal.innerHTML = `
+                <div class="glass-panel w-full max-w-lg h-[500px] flex flex-col rounded-3xl border border-white/20 shadow-2xl overflow-hidden relative">
+                    <!-- Chat Header -->
+                    <div class="p-4 bg-slate-900 border-b border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${animal.emoji}</span>
+                            <div>
+                                <h4 class="text-sm font-bold text-white flex items-center gap-1.5">
+                                    ${animal.name.split(' ')[0]} 智慧分身
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                </h4>
+                                <p class="text-[10px] text-gray-400">${animal.name}</p>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('animal-chat-modal').remove()" class="text-gray-400 hover:text-white p-1">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Chat Messages Area -->
+                    <div id="animal-chat-messages" class="flex-grow overflow-y-auto p-4 space-y-4 scrollbar-hidden">
+                        <!-- Welcome message from animal -->
+                        <div class="flex items-start gap-2.5">
+                            <span class="text-2xl flex-shrink-0">${animal.emoji}</span>
+                            <div class="bg-white/5 border border-white/10 text-xs md:text-sm text-gray-200 px-3.5 py-2.5 rounded-2xl rounded-tl-none max-w-[80%] leading-relaxed">
+                                哩賀！我是${animal.name.split(' ')[0]} 🐾！很高興在壽山動物園遇到你。你有什麼關於我的身世秘密、生活習慣或者有趣往事想問我嗎？
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Form -->
+                    <form id="animal-chat-form" onsubmit="handleSendAnimalMessage(event, '${zoneId}', ${animalIndex})" class="p-3 bg-slate-950/80 border-t border-white/10 flex gap-2">
+                        <input id="animal-chat-input" type="text" placeholder="輸入你想對 ${animal.name.split(' ')[0]} 說的話..." required
+                               class="flex-grow bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-xs md:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-400" />
+                        <button type="submit" class="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-300 hover:to-emerald-400 text-black font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all active:scale-95">
+                            <span>傳送</span> <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            document.body.appendChild(chatModal);
+            document.getElementById('animal-chat-input').focus();
+        }
+
+        async function handleSendAnimalMessage(event, zoneId, animalIndex) {
+            event.preventDefault();
+            const zone = zooData.find(z => z.id === zoneId);
+            if (!zone) return;
+            const animal = zone.animals[animalIndex];
+            if (!animal) return;
+
+            const inputEl = document.getElementById('animal-chat-input');
+            const messagesArea = document.getElementById('animal-chat-messages');
+            if (!inputEl || !messagesArea) return;
+
+            const userQuery = inputEl.value.trim();
+            if (!userQuery) return;
+
+            inputEl.value = "";
+
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = "flex items-start gap-2.5 justify-end";
+            userMsgDiv.innerHTML = `
+                <div class="bg-gradient-to-br from-green-400/20 to-emerald-500/20 border border-emerald-500/30 text-xs md:text-sm text-white px-3.5 py-2.5 rounded-2xl rounded-tl-none max-w-[80%] leading-relaxed">
+                    ${userQuery}
+                </div>
+                <div class="w-7 h-7 bg-green-500/20 border border-green-500/30 text-green-400 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0">
+                    遊客
+                </div>
+            `;
+            messagesArea.appendChild(userMsgDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+
+            const loadingMsgDiv = document.createElement('div');
+            loadingMsgDiv.id = "animal-loading-message";
+            loadingMsgDiv.className = "flex items-start gap-2.5";
+            loadingMsgDiv.innerHTML = `
+                <span class="text-2xl flex-shrink-0">${animal.emoji}</span>
+                <div class="bg-white/5 border border-white/10 text-xs md:text-sm text-gray-400 px-3.5 py-2.5 rounded-2xl rounded-tl-none max-w-[80%] leading-relaxed flex items-center gap-1.5">
+                    <i class="fa-solid fa-ellipsis animate-pulse"></i> 正在思考怎麼回覆...
+                </div>
+            `;
+            messagesArea.appendChild(loadingMsgDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+
+            const systemPrompt = `你是高雄壽山動物園的官方招牌明星動物「${animal.name}」。
+請扮演該角色，使用第一人稱親切、熱情、幽默、生動的台灣南部在地口口吻回覆遊客。
+你的個人背景與科普檔案：
+- 棲地分布與適應：${animal.habitat}
+- 演化與近親祖先：${animal.ancestor}
+- 歷史背景與特色：${animal.history}
+- 你的導覽語調：${animal.ttsText}
+
+回覆規範：
+1. 請用繁體中文。
+2. 回覆長度維持在60-120字之間。
+3. 保持活潑對話，像是個真正的動物明星！
+4. 適當使用動物本身特徵的狀聲詞和 emoji（如：🐐 咩、🦁 吼、🦙 吐口水、🦦 呆呆、🐻 V字領等）。
+5. 可以適度提到高雄壽山動物園、柴山風光。`;
+
+            try {
+                const responseText = await callGeminiAPI(userQuery, systemPrompt);
+                
+                const loadingDiv = document.getElementById('animal-loading-message');
+                if (loadingDiv) loadingDiv.remove();
+
+                const animalMsgDiv = document.createElement('div');
+                animalMsgDiv.className = "flex items-start gap-2.5 animate-fade-in";
+                animalMsgDiv.innerHTML = `
+                    <span class="text-2xl flex-shrink-0">${animal.emoji}</span>
+                    <div class="bg-white/5 border border-white/10 text-xs md:text-sm text-gray-200 px-3.5 py-2.5 rounded-2xl rounded-tl-none max-w-[80%] leading-relaxed">
+                        ${responseText}
+                    </div>
+                `;
+                messagesArea.appendChild(animalMsgDiv);
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+
+            } catch (error) {
+                const loadingDiv = document.getElementById('animal-loading-message');
+                if (loadingDiv) loadingDiv.remove();
+
+                const errorDiv = document.createElement('div');
+                errorDiv.className = "flex items-start gap-2.5 animate-fade-in";
+                errorDiv.innerHTML = `
+                    <span class="text-2xl flex-shrink-0">⚠️</span>
+                    <div class="bg-red-500/10 border border-red-500/20 text-xs text-red-300 px-3.5 py-2.5 rounded-2xl rounded-tl-none max-w-[80%]">
+                        系統目前在無金鑰沙盒環境，我的智慧網路暫時斷線了。不過你可以點選播放下面的「語音導覽」，直接傾聽我的科普故事喔！
+                    </div>
+                `;
+                messagesArea.appendChild(errorDiv);
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }
+        }
+
+        function playAnimalTTS(zoneId, animalIndex) {
+            const zone = zooData.find(z => z.id === zoneId);
+            if (zone) {
+                const animal = zone.animals[animalIndex];
+                if (animal) {
+                    speakText(animal.name.split(' ')[0], animal.ttsText);
+                }
+            }
+        }
+
+        function speakText(name, text) {
+            stopVoice(); 
+
+            if ('speechSynthesis' in window) {
+                const player = document.getElementById('global-audio-player');
+                const title = document.getElementById('player-title');
+                const progressBar = document.getElementById('player-progress');
+                
+                title.textContent = `${name} 導覽中...`;
+                player.classList.remove('translate-y-24', 'opacity-0');
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-TW';
+                utterance.rate = 0.95; 
+
+                let start = Date.now();
+                let estimatedDuration = text.length * 280; 
+                
+                progressBar.style.width = '0%';
+                progressInterval = setInterval(() => {
+                    let elapsed = Date.now() - start;
+                    let percentage = Math.min((elapsed / estimatedDuration) * 100, 98);
+                    progressBar.style.width = `${percentage}%`;
+                }, 100);
+
+                utterance.onend = () => {
+                    progressBar.style.width = '100%';
+                    setTimeout(stopVoice, 800);
+                };
+
+                utterance.onerror = () => {
+                    stopVoice();
+                };
+
+                currentAudio = utterance;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                const feedback = document.getElementById('calibrated-coords');
+                if (feedback) {
+                    feedback.textContent = "您的瀏覽器不支援 Speech API 播音，以下為導覽文本：" + text;
+                }
+            }
+        }
+
+        // ------------------ ✨ HELPERS TO RESOLVE SYNTAX NESTING ISSUES ------------------
+        function generateAnimalCardsListHtml(zone) {
+            return zone.animals.map((animal, index) => {
+                const escapedHabitat = animal.habitat.replace(/["'`\\]/g, '');
+                const escapedHistory = animal.history.replace(/["'`\\]/g, '');
+
+                return `
+                    <div id="animal-card-${index}" class="glass-card p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+                        <!-- Glow effect -->
+                        <div class="absolute -right-16 -top-16 w-32 h-32 rounded-full bg-green-500/5 blur-2xl group-hover:bg-green-500/10 transition-all duration-300 pointer-events-none"></div>
+                        
+                        <div class="flex flex-col lg:flex-row gap-6 justify-between items-start">
+                            <!-- Column 0: Real Animal Photo (Stunning responsive photo layer with lazy fallback) -->
+                            <div class="lg:w-1/4 w-full flex-shrink-0 relative overflow-hidden rounded-2xl aspect-[4/3] bg-black/40 border border-white/10">
+                                <img src="${animal.image}" 
+                                     alt="${animal.name}" 
+                                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/400x300/112211/ffffff?text=${encodeURIComponent(animal.name.split(' ')[0])}';" />
+                                <div class="absolute top-2.5 left-2.5 bg-black/75 backdrop-blur-md text-[10px] text-white px-2.5 py-1 rounded-full border border-white/10 font-bold flex items-center gap-1.5 shadow-md">
+                                    <span>${animal.emoji}</span>
+                                    <span>官方實照</span>
+                                </div>
+                            </div>
+
+                            <!-- Column 1: Profile & Bio section -->
+                            <div class="flex-grow lg:w-1/2 space-y-4">
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <span class="text-3xl">${animal.emoji}</span>
+                                    <h4 class="text-xl font-bold text-white">${animal.name}</h4>
+                                    <span class="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2.5 py-1 rounded-full font-bold uppercase tracking-wide">官方科普檔案</span>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-black/20 p-3.5 rounded-xl border border-white/5">
+                                        <h5 class="text-xs font-bold text-green-400 flex items-center gap-1.5 mb-1.5">
+                                            <i class="fa-solid fa-earth-asia"></i> 棲地分布與環境適應
+                                        </h5>
+                                        <p class="text-xs text-gray-300 leading-relaxed">${animal.habitat}</p>
+                                    </div>
+                                    <div class="bg-black/20 p-3.5 rounded-xl border border-white/5">
+                                        <h5 class="text-xs font-bold text-sky-400 flex items-center gap-1.5 mb-1.5">
+                                            <i class="fa-solid fa-dna"></i> 演化背景與近親祖先
+                                        </h5>
+                                        <p class="text-xs text-gray-300 leading-relaxed">${animal.ancestor}</p>
+                                    </div>
+                                </div>
+
+                                <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                                    <h5 class="text-xs font-bold text-yellow-400 flex items-center gap-1.5 mb-2">
+                                        <i class="fa-solid fa-clock-rotate-left"></i> 歷史背景與保護定位
+                                    </h5>
+                                    <p class="text-xs text-gray-300 leading-relaxed">${animal.history}</p>
+                                </div>
+                            </div>
+
+                            <!-- Column 2: Interaction Section -->
+                            <div class="lg:w-1/4 w-full self-stretch flex flex-col justify-between bg-white/[0.02] border border-white/5 p-5 rounded-2xl">
+                                <div class="space-y-3">
+                                    <span class="text-[10px] font-bold text-green-400 bg-green-500/10 px-2.5 py-1 rounded-md border border-green-500/20 block text-center uppercase tracking-wider">
+                                        雙向智慧語音助理
+                                    </span>
+                                    <p class="text-xs text-gray-400 leading-relaxed text-center">
+                                        點選下方按鈕，助理將透過專業配音語調，帶您傾聽「<b>${animal.name.split(' ')[0]}</b>」在壽山的故事。
+                                    </p>
+                                </div>
+                                
+                                <div class="mt-4 space-y-2">
+                                    <button onclick="playAnimalTTS('${zone.id}', ${index})" class="w-full bg-gradient-to-r from-green-400 to-emerald-500 text-black font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-green-500/20 transition-all active:scale-95">
+                                        <i class="fa-solid fa-circle-play"></i> 播放語音導覽
+                                    </button>
+                                    <button onclick="openAnimalChat('${zone.id}', ${index})" class="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-500/20 transition-all active:scale-95">
+                                        <i class="fa-solid fa-comments"></i> ✨ 與我對話聊天
+                                    </button>
+                                    <button onclick="showTextDialog('${animal.name}', '${animal.ttsText}')" class="w-full bg-white/5 text-white/80 border border-white/10 hover:bg-white/10 py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                                        <i class="fa-solid fa-message"></i> 查看對話文本
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function generateSideAnimalsListHtml(zone) {
+            return zone.animals.map((a, idx) => {
+                return `
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5">
+                        <span class="text-xs font-semibold text-white flex items-center gap-2">
+                            <span>${a.emoji}</span> ${a.name.split(' ')[0]}
+                        </span>
+                        <button onclick="scrollToAnimal(${idx})" class="text-[10px] text-green-400 hover:underline">
+                            快速查看
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function stopVoice() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+            const player = document.getElementById('global-audio-player');
+            if (player) {
+                player.classList.add('translate-y-24', 'opacity-0');
+            }
+            const progressBar = document.getElementById('player-progress');
+            if (progressBar) {
+                progressBar.style.width = '0%';
+            }
+            currentAudio = null;
+        }
+
+        function renderZoo(filterId = 'home') {
+            const grid = document.getElementById('content-grid');
+            grid.innerHTML = '';
+
+            // 動態切換 Header 影片與大圖展示狀態：只在首頁（Home）顯示，切換至其他分頁時自動 hidden 隱藏
+            const mainHeader = document.getElementById('main-header');
+            if (mainHeader) {
+                if (filterId === 'home') {
+                    mainHeader.classList.remove('hidden');
+                } else {
+                    mainHeader.classList.add('hidden');
+                }
+            }
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const btnId = btn.id.replace('btn-', '');
+                if (btnId === filterId) {
+                    btn.className = "tab-btn px-4 py-2.5 rounded-xl font-medium text-xs whitespace-nowrap transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-green-400 to-emerald-500 text-black shadow-lg";
+                } else {
+                    const matchedZone = zooData.find(z => z.id === btnId);
+                    if (matchedZone) {
+                        let textCol = "text-white/80 hover:bg-white/10";
+                        if (matchedZone.color === 'pink') textCol = "text-pink-300 hover:bg-pink-500/10";
+                        if (matchedZone.color === 'blue') textCol = "text-blue-300 hover:bg-blue-500/10";
+                        if (matchedZone.color === 'sky') textCol = "text-sky-300 hover:bg-sky-500/10";
+                        if (matchedZone.color === 'yellow') textCol = "text-yellow-300 hover:bg-yellow-500/10";
+                        if (matchedZone.color === 'green') textCol = "text-green-300 hover:bg-green-500/10";
+                        if (matchedZone.color === 'orange') textCol = "text-orange-300 hover:bg-orange-500/10";
+                        if (matchedZone.color === 'yellow-bright') textCol = "text-yellow-200 hover:bg-yellow-200/10";
+                        if (matchedZone.color === 'cyan') textCol = "text-cyan-300 hover:bg-cyan-500/10";
+                        
+                        btn.className = `tab-btn px-3 py-2.5 rounded-xl font-medium text-xs ${textCol} whitespace-nowrap transition-all duration-300 flex items-center gap-1.5`;
+                    } else if (btnId === 'home') {
+                        btn.className = "tab-btn px-4 py-2.5 rounded-xl font-medium text-xs text-green-300 hover:bg-green-500/10 whitespace-nowrap transition-all duration-300 flex items-center gap-1.5";
+                    }
+                }
+            });
+
+            // 1. HOME VIEW: MAP AND ZONED ENTRANCES
+            if (filterId === 'home') {
+                const homeWrapper = document.createElement('div');
+                homeWrapper.className = "space-y-10 animate-fade-in";
+                
+                let mapHTML = `
+                    <div class="glass-panel p-6 rounded-3xl relative overflow-hidden border border-green-500/15 shadow-2xl">
+                        <div class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+                        
+                        <div class="flex flex-col lg:flex-row gap-6 relative z-10">
+                            <div class="lg:w-1/4 flex flex-col justify-between">
+                                <div>
+                                    <span class="text-[10px] font-bold text-green-400 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">Interactive Live Map</span>
+                                    <h4 class="text-2xl font-black text-white mt-3">園區導覽圖</h4>
+                                    <p class="text-xs text-gray-400 mt-2 leading-relaxed">
+                                        導覽按鈕已直接對齊浮動在照片各自的地理位置。
+                                    </p>
+                                </div>
+                                
+                                <div class="mt-4 space-y-4">
+                                    <div class="p-4 bg-gradient-to-br from-indigo-500/10 to-emerald-500/10 border border-emerald-500/25 rounded-2xl relative overflow-hidden group/ai">
+                                        <div class="absolute -right-8 -bottom-8 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl"></div>
+                                        <h5 class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-wand-magic-sparkles animate-pulse text-emerald-400"></i> ✨ AI 行程規劃師
+                                        </h5>
+                                        <p class="text-[10px] text-gray-400 mt-1.5 leading-relaxed">
+                                            正在煩惱行程嗎？點選下方一日遊需求，讓 Gemini AI 規劃最具創意的專屬參觀路線：
+                                        </p>
+                                        <div id="ai-planner-buttons" class="grid grid-cols-2 gap-1.5 mt-3">
+                                            <button onclick="generateItinerary('溫馨親子放電行程')" class="bg-white/5 hover:bg-emerald-500 hover:text-black border border-white/10 rounded-lg py-1.5 px-2 text-[10px] font-bold text-white transition-all text-center">👶 親子樂園</button>
+                                            <button onclick="generateItinerary('網美攝影大師行程')" class="bg-white/5 hover:bg-emerald-500 hover:text-black border border-white/10 rounded-lg py-1.5 px-2 text-[10px] font-bold text-white transition-all text-center">📷 網美美照</button>
+                                            <button onclick="generateItinerary('浪漫情侶約會行程')" class="bg-white/5 hover:bg-emerald-500 hover:text-black border border-white/10 rounded-lg py-1.5 px-2 text-[10px] font-bold text-white transition-all text-center">💖 浪漫約會</button>
+                                            <button onclick="generateItinerary('一小時精華快速閃遊')" class="bg-white/5 hover:bg-emerald-500 hover:text-black border border-white/10 rounded-lg py-1.5 px-2 text-[10px] font-bold text-white transition-all text-center">⚡ 快速精華</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-2 bg-black/40 p-4 rounded-2xl border border-white/5 text-[11px]">
+                                        <div class="text-[11px] text-gray-400 font-black uppercase tracking-wider border-b border-white/5 pb-1 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-map-pin text-green-400"></i> 官方8大展區快速跳轉
+                                        </div>
+                                        <div class="grid grid-cols-1 gap-1.5">
+                                            <div class="flex items-center gap-1.5 cursor-pointer text-pink-300 hover:text-white" onclick="switchTab('ranch')"><span class="w-2 h-2 rounded-full bg-pink-500"></span> 兒童牧場 (粉紅色)</div>
+                                            <div class="flex items-center gap-1.5 cursor-pointer text-blue-300 hover:text-white" onclick="switchTab('friendly')"><span class="w-2 h-2 rounded-full bg-blue-500"></span> 友善動物區 (藍色)</div>
+                                            <div class="flex items-center gap-1.5 cursor-pointer text-sky-300 hover:text-white" onclick="switchTab('primates')"><span class="w-2 h-2 rounded-full bg-sky-400"></span> 猿猴家族 (淺藍色)</div>
+                                            <div class="flex items-center gap-1.5 cursor-pointer text-yellow-300 hover:text-white" onclick="switchTab('savannah')"><span class="w-2 h-2 rounded-full bg-yellow-400"></span> 草原動物區 (黃色)</div>
+                                            <div class="flex items-center gap-1.5 cursor-pointer text-green-300 hover:text-white" onclick="switchTab('taiwan')"><span class="w-2 h-2 rounded-full bg-green-500"></span> 台灣原生區 (綠色)</div>
+                                            <div class="flex items-center gap-1.5 cursor-pointer text-orange-300 hover:text-white" onclick="switchTab('cross')"><span class="w-2 h-2 rounded-full bg-orange-500"></span> 跨域生態區 (橘色)</div>
+                                            <div class="flex items-center gap-1.5 cursor-pointer text-yellow-200 hover:text-white" onclick="switchTab('path')"><span class="w-2 h-2 rounded-full bg-yellow-300"></span> 動物小徑 (亮黃色)</div>
+                                            <div class="flex items-center gap-1.5 cursor-pointer text-cyan-300 hover:text-white" onclick="switchTab('aquatic')"><span class="w-2 h-2 rounded-full bg-cyan-400"></span> 水棲動物區 (青色)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="interactive-map-box" class="lg:w-3/4 bg-slate-950/60 rounded-3xl border border-white/10 relative overflow-hidden aspect-[4/3] w-full shadow-inner transition-all duration-300">
+                                <img id="shoushan-map-img" src="${customMapUrl}" 
+                                     alt="壽山動物園手繪導覽地圖" 
+                                     class="w-full h-full object-cover select-none pointer-events-none"
+                                     onerror="handleMapImgError(this)" />
+                                
+                                <div id="map-fallback-overlay" class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 flex flex-col justify-end p-6 pointer-events-none hidden">
+                                    <div class="max-w-md bg-black/60 p-4 rounded-xl border border-white/10 backdrop-blur">
+                                        <h5 class="text-xs font-bold text-yellow-400 mb-1">
+                                            <i class="fa-solid fa-triangle-exclamation"></i> 正使用高對比背景圖示
+                                        </h5>
+                                        <p class="text-[10px] text-gray-300">
+                                            已為您啟動高辨識度備用森林地圖，不影響按鈕點擊功能。
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div id="map-pins-layer" class="absolute inset-0 w-full h-full pointer-events-none">
+                                    <!-- Pins are generated and appended here dynamically as high-quality buttons -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="ai-itinerary-output" class="hidden animate-fade-in mt-4"></div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                            <h3 class="text-lg font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-layer-group text-green-400"></i> 拜訪動物的家 (官方8大主題分區)
+                            </h3>
+                            <span class="text-xs text-gray-400 font-medium">點擊卡片進入各分區詳細導覽</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${zooData.map(zone => {
+                                let badgeColor = "bg-white/10 text-white border-white/10";
+                                if (zone.color === 'pink') badgeColor = "bg-pink-500/10 text-pink-400 border-pink-500/20";
+                                if (zone.color === 'blue') badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+                                if (zone.color === 'sky') badgeColor = "bg-sky-500/10 text-sky-400 border-sky-500/20";
+                                if (zone.color === 'yellow') badgeColor = "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+                                if (zone.color === 'green') badgeColor = "bg-green-500/10 text-green-400 border-green-500/20";
+                                if (zone.color === 'orange') badgeColor = "bg-orange-500/10 text-orange-400 border-orange-500/20";
+                                if (zone.color === 'yellow-bright') badgeColor = "bg-yellow-500/10 text-yellow-300 border-yellow-500/20";
+                                if (zone.color === 'cyan') badgeColor = "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
+
+                                return `
+                                    <div onclick="switchTab('${zone.id}')" class="zone-entrance-card p-5 rounded-2xl cursor-pointer group hover:bg-white/[0.04] hover:-translate-y-1 hover:border-white/25 flex flex-col justify-between gap-4">
+                                        <div class="space-y-2">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs font-bold px-2.5 py-1 rounded-lg border ${badgeColor} flex items-center gap-1.5">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-current"></span> ${zone.zoneTitle}
+                                                </span>
+                                                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">官方展區</span>
+                                            </div>
+                                            <p class="text-xs text-gray-400 leading-relaxed mt-2 line-clamp-2">${zone.zoneDesc}</p>
+                                        </div>
+                                        <div class="flex items-center justify-between text-xs font-bold border-t border-white/5 pt-3 mt-1">
+                                            <span class="text-gray-500 group-hover:text-gray-300 transition-colors">內含 ${zone.animals.length} 個代表性物種</span>
+                                            <span class="text-green-400 group-hover:translate-x-1 transition-transform">
+                                                進入探索 <i class="fa-solid fa-arrow-right ml-1"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 壽山官方資訊：已依據需求更新標題、並於下方將「最新票務公告」更名為「遊園資訊」 -->
+                    <div class="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 mt-10">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-green-500/10 text-green-400 flex items-center justify-center border border-green-500/20 text-xl flex-shrink-0">
+                                <i class="fa-solid fa-qrcode"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-white flex items-center gap-2.5">
+                                    壽山官方資訊
+                                </h4>
+                                <div class="mt-2.5">
+                                    <!-- 已更新為「遊園資訊」按鈕並更換了對應圖示 -->
+                                    <a href="https://zoo.kcg.gov.tw/zh-tw/tour-information/" target="_blank" class="inline-flex items-center gap-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 hover:text-green-300 text-xs font-bold px-3.5 py-2 rounded-xl border border-green-500/30 transition-all hover:scale-[1.02] shadow-lg shadow-green-500/5">
+                                        <i class="fa-solid fa-circle-info"></i> 遊園資訊 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                    </a>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-3 leading-relaxed">
+                                    歡迎點擊上方按鈕查看最新票價、優待方案、營業時間與預約須知，或直接掃描右側二維碼！立即獲取壽山動物園官方最新交通接駁、精彩活動預告以及即時現場展演資訊。
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0 bg-white p-2.5 rounded-2xl shadow-2xl border border-white/10 hover:scale-105 transition-transform duration-300">
+                            <img src="https://lh3.googleusercontent.com/d/1gcAYh_Tolxnl6CLvfmHfSucHqSh9Wr6G" alt="壽山官方 QR Code" class="w-24 h-24 object-contain pointer-events-none select-none" />
+                        </div>
+                    </div>
+                `;
+                
+                homeWrapper.innerHTML = mapHTML;
+                grid.appendChild(homeWrapper);
+
+                setTimeout(populateMapPins, 50);
+
+            // 2. DETAILED ZONE VIEW
+            } else {
+                const zone = zooData.find(z => z.id === filterId);
+                if (zone) {
+                    const detailWrapper = document.createElement('div');
+                    detailWrapper.className = "space-y-8 animate-fade-in";
+
+                    let themeText = "text-white";
+                    let themeBorder = "border-white/20";
+                    let themeBg = "bg-white/5";
+                    let themePinColor = "bg-white";
+                    if (zone.color === 'pink') { themeText = "text-pink-400"; themeBorder = "border-pink-500/30"; themeBg = "bg-pink-500/10"; themePinColor = "bg-pink-500"; }
+                    if (zone.color === 'blue') { themeText = "text-blue-400"; themeBorder = "border-blue-500/30"; themeBg = "bg-blue-500/10"; themePinColor = "bg-blue-500"; }
+                    if (zone.color === 'sky') { themeText = "text-sky-400"; themeBorder = "border-sky-500/30"; themeBg = "bg-sky-500/10"; themePinColor = "bg-sky-400"; }
+                    if (zone.color === 'yellow') { themeText = "text-yellow-400"; themeBorder = "border-yellow-500/30"; themeBg = "bg-yellow-500/10"; themePinColor = "bg-yellow-400"; }
+                    if (zone.color === 'green') { themeText = "text-green-400"; themeBorder = "border-green-500/30"; themeBg = "bg-green-500/10"; themePinColor = "bg-green-500"; }
+                    if (zone.color === 'orange') { themeText = "text-orange-400"; themeBorder = "border-orange-500/30"; themeBg = "bg-orange-500/10"; themePinColor = "bg-orange-500"; }
+                    if (zone.color === 'yellow-bright') { themeText = "text-yellow-200"; themeBorder = "border-yellow-500/30"; themeBg = "bg-yellow-500/10"; themePinColor = "bg-yellow-300"; }
+                    if (zone.color === 'cyan') { themeText = "text-cyan-400"; themeBorder = "border-cyan-500/30"; themeBg = "bg-cyan-500/10"; themePinColor = "bg-cyan-400"; }
+
+                    const animalsListHtml = generateAnimalCardsListHtml(zone);
+                    const sideAnimalsHtml = generateSideAnimalsListHtml(zone);
+
+                    let detailHTML = `
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+                            <div class="space-y-2">
+                                <button onclick="switchTab('home')" class="text-xs font-semibold text-gray-400 hover:text-white flex items-center gap-1 transition-colors">
+                                    <i class="fa-solid fa-chevron-left"></i> 返回園區地圖
+                                </button>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl ${themeBg} ${themeText} flex items-center justify-center border ${themeBorder} text-lg">
+                                        <i class="fa-solid ${zone.icon}"></i>
+                                    </div>
+                                    <h2 class="text-3xl font-black text-white">${zone.zoneTitle}</h2>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs px-3 py-1.5 rounded-full border ${themeBorder} ${themeText} font-bold flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full ${themePinColor} shadow-sm"></span> 官方主題展區
+                                </span>
+                                <span class="text-xs text-gray-400">目前位於手繪地圖座標: <b>X: ${zone.mapCoords.x} / Y: ${zone.mapCoords.y}</b></span>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start gap-6">
+                            <div class="md:w-2/3 space-y-4">
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-info text-green-400"></i> 展區規劃與設計理念
+                                </h3>
+                                <p class="text-sm text-gray-300 leading-relaxed">${zone.zoneDesc}</p>
+                                <p class="text-xs text-gray-400 leading-relaxed">
+                                    本區在近年「新動物園運動」中大幅度的進化，取消原本遮蔽視線的網格、生硬高聳水泥牆，取而代之的是利用高差、植被防護、水池壕溝以及透明觀景玻璃，打造出既保護動物隱私、又讓人類能以更尊重的視角平視 or 仰視自然生命的友善環境。
+                                </p>
+                            </div>
+                            <div class="md:w-1/3 w-full bg-slate-950/40 border border-white/5 p-4 rounded-2xl space-y-3">
+                                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">展示代表性物種</h4>
+                                <div class="space-y-2">
+                                    ${sideAnimalsHtml}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <h3 class="text-xl font-black text-white flex items-center gap-2 border-b border-white/5 pb-2">
+                                <i class="fa-solid fa-feather-pointed text-green-400"></i> 物種歷史與演化保育檔案
+                            </h3>
+                            
+                            <div class="space-y-8">
+                                ${animalsListHtml}
+                            </div>
+                        </div>
+                    `;
+
+                    detailWrapper.innerHTML = detailHTML;
+                    grid.appendChild(detailWrapper);
+                }
+            }
+        }
+
+        function scrollToAnimal(index) {
+            const card = document.getElementById(`animal-card-${index}`);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.classList.add('ring-2', 'ring-green-400/50');
+                setTimeout(() => {
+                    card.classList.remove('ring-2', 'ring-green-400/50');
+                }, 2000);
+            }
+        }
+
+        function populateMapPins() {
+            const mapBox = document.getElementById('interactive-map-box');
+            const pinLayer = document.getElementById('map-pins-layer');
+            if (!mapBox || !pinLayer) return;
+
+            pinLayer.innerHTML = ''; 
+
+            zooData.forEach((zone, idx) => {
+                let colorClass = "bg-green-500 shadow-green-500/50";
+                let btnBorderHover = "hover:border-green-400";
+                let hoverShadowClass = "hover:shadow-[0_0_15px_rgba(34,197,94,0.4)]";
+
+                if (zone.color === 'pink') { colorClass = "bg-pink-500 shadow-pink-500/50"; btnBorderHover = "hover:border-pink-400"; hoverShadowClass = "hover:shadow-[0_0_15px_rgba(236,72,153,0.4)]"; }
+                if (zone.color === 'blue') { colorClass = "bg-blue-500 shadow-blue-500/50"; btnBorderHover = "hover:border-blue-400"; hoverShadowClass = "hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]"; }
+                if (zone.color === 'sky') { colorClass = "bg-sky-400 shadow-sky-400/50"; btnBorderHover = "hover:border-sky-300"; hoverShadowClass = "hover:shadow-[0_0_15px_rgba(56,189,248,0.4)]"; }
+                if (zone.color === 'yellow') { colorClass = "bg-yellow-400 shadow-yellow-400/50"; btnBorderHover = "hover:border-yellow-300"; hoverShadowClass = "hover:shadow-[0_0_15px_rgba(234,179,8,0.4)]"; }
+                if (zone.color === 'green') { colorClass = "bg-green-500 shadow-green-500/50"; btnBorderHover = "hover:border-green-400"; hoverShadowClass = "hover:shadow-[0_0_15px_rgba(34,197,94,0.4)]"; }
+                if (zone.color === 'orange') { colorClass = "bg-orange-500 shadow-orange-500/50"; btnBorderHover = "hover:border-orange-400"; hoverShadowClass = "hover:shadow-[0_0_15px_rgba(249,115,22,0.4)]"; }
+                if (zone.color === 'yellow-bright') { colorClass = "bg-yellow-300 shadow-yellow-300/50"; btnBorderHover = "hover:border-yellow-200"; hoverShadowClass = "hover:shadow-[0_0_15px_rgba(253,224,71,0.4)]"; }
+                if (zone.color === 'cyan') { colorClass = "bg-cyan-400 shadow-cyan-400/50"; btnBorderHover = "hover:border-cyan-300"; hoverShadowClass = "hover:shadow-[0_0_15px_rgba(34,211,238,0.4)]"; }
+
+                const pin = document.createElement('div');
+                pin.className = `absolute z-20 pointer-events-auto transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group/pin`;
+                pin.style.left = zone.mapCoords.x;
+                pin.style.top = zone.mapCoords.y;
+
+                const animDelay = (idx * 0.35).toFixed(2);
+
+                pin.innerHTML = `
+                    <div class="relative flex items-center justify-center select-none">
+                        <button class="floating-btn flex items-center gap-1.5 bg-slate-950/90 hover:bg-white border border-white/15 ${btnBorderHover} ${hoverShadowClass} rounded-full px-2 py-1 md:px-2.5 md:py-1.5 shadow-2xl" style="animation-delay: ${animDelay}s;">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${colorClass} opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 ${colorClass}"></span>
+                            </span>
+                            <i class="fa-solid ${zone.icon} text-[9px] md:text-[10px] text-white/80 group-hover/pin:text-black pointer-events-none"></i>
+                            <span class="text-[9px] md:text-[11px] font-bold text-white group-hover/pin:text-black whitespace-nowrap pointer-events-none">${zone.zoneTitle}</span>
+                        </button>
+                    </div>
+                `;
+
+                pin.onclick = (e) => {
+                    e.stopPropagation();
+                    switchTab(zone.id);
+                };
+
+                pinLayer.appendChild(pin);
+            });
+        }
+
+        function handleMapImgError(img) {
+            console.warn("Primary handdrawn map URL could not load. Triggering high-contrast design backgrounds...");
+            
+            const overlay = document.getElementById('map-fallback-overlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+            }
+
+            if (mapFallbackChainIndex < fallbackMaps.length) {
+                img.src = fallbackMaps[mapFallbackChainIndex];
+                mapFallbackChainIndex++;
+            }
+        }
+
+        function showTextDialog(title, text) {
+            const existingModal = document.getElementById('dialog-modal-box');
+            if (existingModal) existingModal.remove();
+
+            const modal = document.createElement('div');
+            modal.id = "dialog-modal-box";
+            modal.className = "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in";
+            modal.innerHTML = `
+                <div class="glass-panel p-6 rounded-3xl max-w-md w-full border border-white/20 shadow-2xl relative">
+                    <button onclick="document.getElementById('dialog-modal-box').remove()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="space-y-4">
+                        <span class="text-[10px] font-bold text-green-400 bg-green-500/10 px-2.5 py-1 rounded-md border border-green-500/20 inline-block uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>對話文本
+                        </span>
+                        <h4 class="text-xl font-black text-white">${title}</h4>
+                        <p class="text-sm text-gray-300 leading-relaxed bg-black/40 p-4 rounded-2xl border border-white/5">${text}</p>
+                        <div class="flex justify-end pt-2">
+                            <button onclick="document.getElementById('dialog-modal-box').remove()" class="px-5 py-2 rounded-xl bg-white/10 text-white hover:bg-white/20 text-xs font-bold transition-all">
+                                關閉視窗
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function toggleBannerVideoVolume(btn) {
+            const video = document.getElementById('hero-banner-video');
+            if (!video) return;
+            video.muted = !video.muted;
+            const icon = btn.querySelector('i');
+            if (video.muted) {
+                icon.className = 'fa-solid fa-volume-xmark text-xs md:text-sm';
+                btn.title = "取消靜音";
+                btn.classList.remove('border-green-400/50');
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-xs md:text-sm text-green-400 animate-pulse';
+                btn.title = "設定靜音";
+                btn.classList.add('border-green-400/50');
+            }
+        }
+
+        function toggleBannerVideoPlay(btn) {
+            const video = document.getElementById('hero-banner-video');
+            if (!video) return;
+            const icon = btn.querySelector('i');
+            if (video.paused) {
+                video.play();
+                icon.className = 'fa-solid fa-pause text-xs md:text-sm';
+                btn.title = "暫停播放";
+                btn.classList.remove('border-green-400/50');
+            } else {
+                video.pause();
+                icon.className = 'fa-solid fa-play text-xs md:text-sm text-green-400';
+                btn.title = "繼續播放";
+                btn.classList.add('border-green-400/50');
+            }
+        }
+
+        function switchTab(tabId) {
+            stopVoice(); 
+            renderZoo(tabId);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.onload = function() {
+            renderZoo('home');
+        };
+    </script>
+</body>
+</html>
